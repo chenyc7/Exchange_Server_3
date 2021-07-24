@@ -62,15 +62,85 @@ def trade():
             print( json.dumps(content) )
             log_message(content)
             return jsonify( False )
+
+
+        validSig = verify(content)
+
+        if validSig == False:
             
+            print(json.dumps(content))
+            log_message(content)
+            return jsonify(False)
+        
+        else:   
+
+            print(content)
+            payload = content['payload'] 
+            order_obj = order(sender_pk = payload['sender_pk'],
+                receiver_pk = payload['receiver_pk'],
+                buy_currency = payload['buy_currency'],
+                sell_currency = payload['sell_currency'],
+                buy_amount = payload['buy_amount'],
+                sell_amount = payload['sell_amount'], 
+                signature = content['sig'])
+
+            g.session.add(order_obj)
+            g.session.commit()
+
+        return jsonify( True )
+
+
+
         #Your code here
         #Note that you can access the database session using g.session
 
 @app.route('/order_book')
 def order_book():
     #Your code here
+
+    result = []
+    result["data"] = []
+
+    orders = g.session.query(Order).all()
+
+    for order in orders:
+        columns = ['sender_pk', "receiver_pk", "buy_currency", "sell_currency","buy_amount","sell_amount","signature"]
+
+        for order in orders:
+            dic = {}
+            dic['sender_pk'] = order.sender_pk
+            dic['receiver_pk'] = order.receiver_pk
+            dic['buy_currency'] = order.buy_currency
+            dic['sell_currency'] = order.sell_currency
+            dic['buy_amount'] = order.buy_amount
+            dic['sell_amount'] = order.sell_amount
+            dic['signature'] = order.signature
+            result["data"].append(dic)
+
     #Note that you can access the database session using g.session
     return jsonify(result)
+
+
+def verify(content):
+    payload = content['payload']
+    sig = str(content['sig'])
+    platform = str(payload['platform'])
+    pk = str(payload['sender_pk'])
+    result = False
+
+    payload =  json.dumps(payload)
+
+    if platform == 'Ethereum':
+        result = False
+        eth_encoded_msg = eth_account.message.encode_defunt (text = payload)
+        if eth_account.Account.recover_message (eth_encoded_msg， signature = sig) == pk:
+            result = True
+
+    if platform == 'Algorand':
+        if algosdk.util.verify_bytes(payload.encode ('utf-8'),sig,pk):
+            result = True
+    return result
+
 
 if __name__ == '__main__':
     app.run(port='5002')
