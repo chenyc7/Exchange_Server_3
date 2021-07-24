@@ -45,11 +45,13 @@ def log_message(d)
 @app.route('/trade', methods=['POST'])
 def trade():
     if request.method == "POST":
+        
         content = request.get_json(silent=True)
-        print( f"content = {json.dumps(content)}" )
+        #print( f"content = {json.dumps(content)}" )
         columns = [ "sender_pk", "receiver_pk", "buy_currency", "sell_currency", "buy_amount", "sell_amount", "platform" ]
         fields = [ "sig", "payload" ]
         error = False
+        
         for field in fields:
             if not field in content.keys():
                 print( f"{field} not received by Trade" )
@@ -80,7 +82,7 @@ def trade():
 
             print(content)
             payload = content['payload'] 
-            order_obj = order(sender_pk = payload['sender_pk'],
+            order_obj = Order(sender_pk = payload['sender_pk'],
                 receiver_pk = payload['receiver_pk'],
                 buy_currency = payload['buy_currency'],
                 sell_currency = payload['sell_currency'],
@@ -102,7 +104,7 @@ def trade():
 def order_book():
     #Your code here
 
-    result = []
+    result = {}
     result["data"] = []
 
     orders = g.session.query(Order).all()
