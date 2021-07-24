@@ -128,23 +128,26 @@ def order_book():
 
 
 def verify(content):
+
     payload = content['payload']
     sig = str(content['sig'])
     platform = str(payload['platform'])
     pk = str(payload['sender_pk'])
+
     result = False
 
     payload =  json.dumps(payload)
 
     if platform == 'Ethereum':
         result = False
-        eth_encoded_msg = eth_account.message.encode_defunt (text = payload)
+        eth_encoded_msg = eth_account.message.encode_defunct (text = payload)
         if eth_account.Account.recover_message (eth_encoded_msg， signature = sig) == pk:
             result = True
 
     if platform == 'Algorand':
-        if algosdk.util.verify_bytes(payload.encode ('utf-8'),sig,pk):
+        if algosdk.util.verify_bytes(payload.encode('utf-8'),sig,pk):
             result = True
+
     return result
 
 
