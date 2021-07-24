@@ -30,12 +30,12 @@ def shutdown_session(response_or_exc):
 -------- Helper methods (feel free to add your own!) -------
 """
 
-def log_message(d)
+def log_message(d):
 
     log_obj = Log(message = json.dumps(d))
     g.session.add(log_obj)
     g.session.commit()
-    return 
+     
 
 
 """
@@ -60,10 +60,12 @@ def trade():
                 return jsonify( False )
         
         error = False
+
         for column in columns:
             if not column in content['payload'].keys():
                 print( f"{column} not received by Trade" )
                 error = True
+
         if error:
             print( json.dumps(content) )
             log_message(content)
@@ -82,6 +84,7 @@ def trade():
 
             print(content)
             payload = content['payload'] 
+            
             order_obj = Order(sender_pk = payload['sender_pk'],
                 receiver_pk = payload['receiver_pk'],
                 buy_currency = payload['buy_currency'],
@@ -141,7 +144,7 @@ def verify(content):
     if platform == 'Ethereum':
         result = False
         eth_encoded_msg = eth_account.message.encode_defunct (text = payload)
-        if eth_account.Account.recover_message (eth_encoded_msg， signature = sig) == pk:
+        if eth_account.Account.recover_message (eth_encoded_msg,signature = sig) == pk:
             result = True
 
     if platform == 'Algorand':
