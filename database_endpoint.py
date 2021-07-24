@@ -127,7 +127,7 @@ def order_book():
             result["data"].append(dic)
 
     #Note that you can access the database session using g.session
-    return (result)
+    return jsonify(result)
 
 
 def verify(content):
